@@ -1,31 +1,37 @@
 class Solution {
-public:
-    int maximalRectangle(vector<vector<char>>& matrix) {
-        if (matrix.empty() || matrix[0].empty())
-            return 0;
-        
-        int rows = matrix.size();
-        int cols = matrix[0].size();
-        vector<int> heights(cols + 1, 0); // Include an extra element for easier calculation
-        int maxArea = 0;
-        
-        for (const auto& row : matrix) {
-            for (int i = 0; i < cols; i++) {
-                heights[i] = (row[i] == '1') ? heights[i] + 1 : 0;
-            }
-            
-            // Calculate max area using histogram method
-            int n = heights.size(); // Number of bars in the histogram
-            
-            for (int i = 0; i < n; i++) {
-                for (int j = i, minHeight = INT_MAX; j < n; j++) {
-                    minHeight = min(minHeight, heights[j]);
-                    int area = minHeight * (j - i + 1);
-                    maxArea = max(maxArea, area);
-                }
-            }
-        }
-        
-        return maxArea;
+ public:
+  int maximalRectangle(vector<vector<char>>& matrix) {
+    if (matrix.empty())
+      return 0;
+
+    int ans = 0;
+    vector<int> hist(matrix[0].size());
+
+    for (const vector<char>& row : matrix) {
+      for (int i = 0; i < row.size(); ++i)
+        hist[i] = row[i] == '0' ? 0 : hist[i] + 1;
+      ans = max(ans, largestRectangleArea(hist));
     }
+
+    return ans;
+  }
+
+ private:
+  int largestRectangleArea(const vector<int>& heights) {
+    int ans = 0;
+    stack<int> stack;
+
+    for (int i = 0; i <= heights.size(); ++i) {
+      while (!stack.empty() &&
+             (i == heights.size() || heights[stack.top()] > heights[i])) {
+        const int h = heights[stack.top()];
+        stack.pop();
+        const int w = stack.empty() ? i : i - stack.top() - 1;
+        ans = max(ans, h * w);
+      }
+      stack.push(i);
+    }
+
+    return ans;
+  }
 };
